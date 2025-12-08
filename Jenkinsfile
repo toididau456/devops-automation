@@ -1,12 +1,12 @@
 pipeline {
     agent any
-//     tools{
-//         maven 'maven_3_5_0'
-//     }
+    tools{
+        maven 'maven_3_5_0'
+    }
     stages{
         stage('Build Maven'){
             steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Java-Techie-jt/devops-automation']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/toididau456/devops-automation']]])
                 sh 'mvn clean install'
             }
         }
@@ -22,8 +22,7 @@ pipeline {
 //                 script{
 //                    withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
 //                    sh 'docker login -u javatechie -p ${dockerhubpwd}'
-//
-// }
+//                    }
 //                    sh 'docker push javatechie/devops-integration'
 //                 }
 //             }
@@ -35,5 +34,5 @@ pipeline {
 //                 }
 //             }
 //         }
-//     }
+    }
 }
