@@ -1,8 +1,8 @@
 pipeline {
     agent any
-    tools{
-        maven 'maven_3_5_0'
-    }
+//     tools{
+//         maven 'maven_3_5_0'
+//     }
     stages{
         stage('Build Maven'){
             steps{
@@ -10,13 +10,13 @@ pipeline {
                 sh 'mvn clean install'
             }
         }
-//         stage('Build docker image'){
-//             steps{
-//                 script{
-//                     sh 'docker build -t javatechie/devops-integration .'
-//                 }
-//             }
-//         }
+        stage('Build docker image'){
+            steps{
+                script{
+                    sh 'docker build -t registry/${PROJECT_NAME}:${BUILD_NUMBER} .'
+                }
+            }
+        }
 //         stage('Push image to Hub'){
 //             steps{
 //                 script{
