@@ -6,6 +6,8 @@ pipeline {
 
 environment {
         IMAGE = "local-test-image:${BUILD_NUMBER}"
+        DOCKERFILE = 'Dockerfile'      // Dockerfile ở root
+            CONTEXT = '.'                  // context build = workspace root
     }
 
     stages{
