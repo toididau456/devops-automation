@@ -10,14 +10,16 @@ pipeline {
                 sh 'mvn clean install'
             }
         }
-        stage('Build docker image'){
-            steps{
-                script{
-                    sh 'docker build -t registry/${PROJECT_NAME}:${BUILD_NUMBER} .'
+        stage('Build Docker Image Locally') {
+                    steps {
+                        sh '''
+                            echo "Building local Docker image: ${IMAGE}"
+                            docker build -t ${IMAGE} .
+                            docker images | grep ${IMAGE}
+                        '''
+                    }
                 }
-            }
-        }
-        
+
 //         stage('Push image to Hub'){
 //             steps{
 //                 script{
