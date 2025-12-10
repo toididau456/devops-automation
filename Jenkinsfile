@@ -10,6 +10,15 @@ environment {
             CONTEXT = '.'                  // context build = workspace root
     }
 
+    stages {
+        stage('Prepare') {
+          steps {
+            // đảm bảo workspace sạch → tránh file cũ
+            deleteDir()
+            checkout scm
+          }
+        }
+
     stages{
         stage('Build Maven'){
             steps{
