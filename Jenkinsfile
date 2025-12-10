@@ -10,16 +10,15 @@ environment {
             CONTEXT = '.'                  // context build = workspace root
     }
 
-    stages {
-        stage('Prepare') {
-          steps {
-            // đảm bảo workspace sạch → tránh file cũ
-            deleteDir()
-            checkout scm
-          }
-        }
 
     stages{
+    stage('Prepare') {
+              steps {
+                // đảm bảo workspace sạch → tránh file cũ
+                deleteDir()
+                checkout scm
+              }
+
         stage('Build Maven'){
             steps{
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/toididau456/devops-automation']]])
