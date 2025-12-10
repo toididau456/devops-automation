@@ -3,6 +3,11 @@ pipeline {
 //     tools{
 //         maven 'maven_3_5_0'
 //     }
+
+environment {
+        IMAGE = "local-test-image:${BUILD_NUMBER}"
+    }
+
     stages{
         stage('Build Maven'){
             steps{
@@ -19,6 +24,21 @@ pipeline {
                         '''
                     }
                 }
+
+                stage('Run Smoke Test (Optional)') {
+                            steps {
+                                sh '''
+                                    echo "Running container locally..."
+                                    docker run --rm -d --name test-${BUILD_NUMBER} ${IMAGE}
+
+                                    echo "Listing docker containers:"
+                                    docker ps
+
+                                    echo "Stopping container..."
+                                    docker stop test-${BUILD_NUMBER} || true
+                                '''
+                            }
+                        }
 
 //         stage('Push image to Hub'){
 //             steps{
