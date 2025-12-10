@@ -1,71 +1,51 @@
 pipeline {
-    agent any
-//     tools{
-//         maven 'maven_3_5_0'
-//     }
+  agent any
 
-environment {
-        IMAGE = "local-test-image:${BUILD_NUMBER}"
-        DOCKERFILE = 'Dockerfile'      // Dockerfile ở root
-            CONTEXT = '.'                  // context build = workspace root
-    }
+  environment {
+    IMAGE = "local-test-image:${BUILD_NUMBER}"
+    DOCKERFILE = 'Dockerfile'
+    CONTEXT = '.'
+  }
 
+  stages {
 
-    stages{
     stage('Prepare') {
-              steps {
-                // đảm bảo workspace sạch → tránh file cũ
-                deleteDir()
-                checkout scm
-              }
-
-        stage('Build Maven'){
-            steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/toididau456/devops-automation']]])
-                sh 'mvn clean install'
-            }
-        }
-        stage('Build Docker Image Locally') {
-                    steps {
-                        sh '''
-                            echo "Building local Docker image: ${IMAGE}"
-                            docker build -t ${IMAGE} .
-                            docker images | grep ${IMAGE}
-                        '''
-                    }
-                }
-
-                stage('Run Smoke Test (Optional)') {
-                            steps {
-                                sh '''
-                                    echo "Running container locally..."
-                                    docker run --rm -d --name test-${BUILD_NUMBER} ${IMAGE}
-
-                                    echo "Listing docker containers:"
-                                    docker ps
-
-                                    echo "Stopping container..."
-                                    docker stop test-${BUILD_NUMBER} || true
-                                '''
-                            }
-                        }
-
-//         stage('Push image to Hub'){
-//             steps{
-//                 script{
-//                    withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
-//                    sh 'docker login -u javatechie -p ${dockerhubpwd}'
-//                    }
-//                    sh 'docker push javatechie/devops-integration'
-//                 }
-//             }
-//         }
-//         stage('Deploy to k8s'){
-//             steps{
-//                 script{
-//                     kubernetesDeploy (configs: 'deploymentservice.yaml',kubeconfigId: 'k8sconfigpwd')
-//                 }
-//             }
-//         }
+      steps {
+        // Xóa sạch workspace để tránh file cũ
+        deleteDir()
+        // Checkout source code
+        checkout scm
+      }
     }
+
+    stage('Build Maven') {
+      steps {
+        // Ưu tiên mvnw, fallback sang mvn nếu không có
+        sh '''
+          if [ -f "./mvnw" ]; then
+            ./mvnw -B clean package -DskipTests
+          else
+            mvn -B clean package -DskipTests
+          fi
+        '''
+      }
+    }
+
+    stage('Build Docker Image Locally') {
+      steps {
+        sh '''
+          echo "Building local Docker image: ${IMAGE}"
+          docker build --no-cache -f "${DOCKERFILE}" -t "${IMAGE}" ${CONTEXT}
+          docker images | grep "${IMAGE}" || true
+        '''
+      }
+    }
+  }
+
+  post {
+    always {
+      // Dọn image sau khi build (tránh đầy disk Jenkins)
+      sh 'docker rmi ${IMAGE} || true'
+    }
+  }
 }
